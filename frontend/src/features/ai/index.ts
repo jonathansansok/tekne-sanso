@@ -1,0 +1,1 @@
+export { useAiInsights } from "./hooks"

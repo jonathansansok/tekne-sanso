@@ -33,6 +33,17 @@ services:
         condition: service_healthy
     command: sh -c "npx prisma generate && (npx prisma migrate deploy || npx prisma db push) && npm run start"
 
+  web:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: tekne-web
+    environment:
+      VITE_API_URL: http://localhost:3001
+    ports:
+      - "5173:5173"
+    depends_on:
+      - api
 
 volumes:
   tekne_pgdata:
