@@ -132,3 +132,11 @@ Asegurate de tener backend/prisma/migrations/** versionado y corré:
 
 cd backend
 npx prisma migrate dev --name <nombre>
+
+------
+wake up and:
+cd /c/repos/tekne-sanso
+docker compose stop api
+docker compose up -d db
+cd backend
+npm run dev
