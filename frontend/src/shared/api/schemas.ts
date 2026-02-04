@@ -1,3 +1,4 @@
+//frontend\src\shared\api\schemas.ts
 import { z } from "zod"
 
 export const PolicySchema = z.object({
@@ -40,6 +41,7 @@ export const UploadResponseSchema = z.object({
   correlation_id: z.string(),
   inserted_count: z.number(),
   rejected_count: z.number(),
+  duplicates_count: z.number().optional(),
   errors: z.array(UploadErrorSchema),
 })
 

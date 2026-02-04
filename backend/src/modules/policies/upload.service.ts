@@ -83,7 +83,9 @@ export class UploadService {
         ? await this.policiesRepo.createManyStrictInsert(validRows)
         : 0
 
-      const rejected_count = errors.length
+      const rejectedRows = new Set(errors.map(e => e.row_number))
+
+const rejected_count = rejectedRows.size
 
       const duration_ms = Date.now() - started
 
