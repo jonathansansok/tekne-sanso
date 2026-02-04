@@ -1,0 +1,38 @@
+services:
+  db:
+    image: postgres:16
+    container_name: tekne-postgres
+    environment:
+      POSTGRES_USER: tekne
+      POSTGRES_PASSWORD: tekne
+      POSTGRES_DB: tekne_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - tekne_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tekne -d tekne_db"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: tekne-api
+    environment:
+      PORT: 3001
+      DATABASE_URL: postgresql://tekne:tekne@db:5432/tekne_db?schema=public
+      LOG_LEVEL: info
+      AI_PROVIDER: heuristic
+    ports:
+      - "3001:3001"
+    depends_on:
+      db:
+        condition: service_healthy
+    command: sh -c "npx prisma generate && (npx prisma migrate deploy || npx prisma db push) && npm run start"
+
+
+volumes:
+  tekne_pgdata:
