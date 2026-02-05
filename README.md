@@ -196,85 +196,19 @@ README.md (secciones + bullets)
 - Swagger: http://localhost:3001/docs
 
 ## 11) Tests 🧪
-- Backend (Jest + Supertest):
-  - tests/upload.int.test.ts
-  - tests/rules.test.ts
-- Frontend (Vitest + Testing Library):
-  - PoliciesPage.test.tsx
 
+### Backend (Jest + Supertest)
+- `backend/tests/rules.test.ts` — **unit**: motor OOP de reglas de negocio (PolicyValidator + RuleEngine + BusinessRule).
+- `backend/tests/upload.int.test.ts` — **integration**: `POST /upload` (CSV multipart, validación, duplicados, conteos y payload).
+- `backend/tests/ai.int.test.ts` — **integration**: `POST /ai/insights` (insights + highlights + filtros aplicados).
 
-========================================
-DECISIONS.md (10–20 líneas, sin humo)
-========================================
-
-- Prisma + PostgreSQL para rapidez y para hacer cumplir UNIQUE (policy_number) con garantía real (DB como source of truth).
-- Duplicados strict: dejamos que la constraint haga el trabajo y reportamos P2002 como DUPLICATE_POLICY_NUMBER por fila (+ duplicates_count).
-- Validación por capas: PolicyValidator valida técnico (fechas/enum/números) y luego RuleEngine aplica reglas de negocio (BusinessRule polimórficas).
-- OOP real en dominio: BusinessRule abstracta + reglas concretas por tipo; sumar reglas no requiere tocar controllers/services.
-- Paginado limit/offset: UX simple (Prev/Next) y queries directas en DB.
-- Summary: agregaciones con groupBy/aggregate para no cargar todo en memoria.
-- Correlation ID: middleware al inicio para que cada log/response sea correlacionable.
-- Operations table: trazabilidad mínima (status + duration_ms + error_summary) sin tooling externo.
-- AI insights: heurística “barata” que reusa repo.list + repo.summary (consistencia con la UI).
-- Escalabilidad: para CSV grande, batch inserts + job async; índices por filtros; caching de summary si sube el volumen.
-
-
-========================================
-DEPLOY.md (Azure high-level, práctico)
-========================================
-
-Arquitectura propuesta:
-- Backend: Azure App Service (Node) o Azure Functions (HTTP triggers)
-- DB: Azure Database for PostgreSQL (managed)
-- Secrets: Azure Key Vault
-- Observabilidad: Application Insights
-- CI/CD: GitHub Actions
-
-1) Backend (App Service)
-- App Service Linux con Node 20.
-- App settings:
-  - DATABASE_URL (Azure Postgres)
-  - LOG_LEVEL=info
-  - AI_PROVIDER=heuristic
-- Deploy ejecuta:
-  - npx prisma generate
-  - npx prisma migrate deploy
-- Healthcheck: /health
-- CORS: permitir dominio del frontend.
-
-2) Backend (Functions)
-- Express -> Functions vía wrapper o deploy como contenedor.
-- Endpoints como HTTP triggers.
-- Para CSV grande: blob storage + queue + worker (fuera del scope del challenge).
-
-3) PostgreSQL managed
-- Provisionar Azure Database for PostgreSQL.
-- Ejecutar migrations Prisma.
-- Mantener constraints + indexes (status, policy_type, customer, UNIQUE policy_number).
-
-4) Key Vault
-- Guardar DATABASE_URL y futuras keys.
-- App Service/Functions lee secretos con Managed Identity.
-
-5) Application Insights
-- Logs estructurados: correlation_id, endpoint, duration_ms, inserted/rejected.
-- Alertas por 500s, latencia y ratio de fallos en /upload.
-
-6) Frontend
-- Azure Static Web Apps (o cualquier host estático).
-- Setear VITE_API_URL al backend público.
-
-7) CI/CD (GitHub Actions)
-- Steps:
-  - install deps
-  - tests backend (jest) + frontend (vitest)
-  - build backend (tsc) + frontend (vite)
-  - deploy backend + frontend
-  - prisma migrate deploy en deploy del backend
-
-8) Idempotencia / Duplicados
-- UNIQUE en DB como verdad.
-- Extra (opcional): hash del archivo para evitar reprocesar el mismo CSV.
-- Para throughput alto: createMany(skipDuplicates=true) + estrategia para mapear duplicados por fila.
+**Run**
+```bash
+cd backend
+npm run test
+```
+## Docs
+- `DECISIONS.md` — decisiones de arquitectura y tradeoffs.
+- `DEPLOY.md` — estrategia de deploy (Azure high-level) + checklist.
 
 FIN ✅
