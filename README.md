@@ -1,6 +1,3 @@
-TEKNE CHALLENGE — NOTAS PARA COPIAR/PEGAR (TEXTO PLANO) ✅
-(pegable en README.md / DECISIONS.md / DEPLOY.md sin romper formato)
-
 🚀 PRIORITARIO (SETUP LOCAL RÁPIDO)
 ========================================
 
