@@ -1,0 +1,11 @@
+policy_number,customer,policy_type,start_date,end_date,premium_usd,status,insured_value_usd
+POL-001,Acme Corp,Property,2025-01-01,2025-12-31,1200,active,6000
+POL-002,Globex,Auto,2025-02-01,2026-01-31,800,active,20000
+POL-003,Initech,Property,2024-06-01,2025-05-31,1500,expired,8000
+POL-004,Umbrella,Property,2025-03-01,2026-02-28,950,active,3000
+POL-005,Soylent,Auto,2025-01-15,2025-12-15,400,active,9000
+POL-006,Hooli,Auto,2025-05-01,2025-04-30,600,active,12000
+POL-007,Vehement Capital Partners,Property,2025-07-01,2026-06-30,2100,pending,9000
+POL-002,Globex Duplicate Row,Auto,2025-02-01,2026-01-31,800,active,20000
+POL-008,Stark Industries,Property,2025-08-01,2026-07-31,1800,active,5100
+POL-009,Wayne Enterprises,Auto,2025-09-01,2026-08-31,5000,active,50000

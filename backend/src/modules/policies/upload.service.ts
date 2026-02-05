@@ -97,17 +97,21 @@ const rejected_count = rejectedRows.size
         error_summary: rejected_count ? `${rejected_count} validation/rule errors` : null,
       })
 
-      return {
-        operation_id,
-        correlation_id,
-        inserted_count,
-        rejected_count,
-        errors: errors.map(e => ({
-          row_number: e.row_number,
-          field: e.field,
-          code: e.code,
-        })),
-      }
+      const duplicates_count = Math.max(0, validRows.length - inserted_count)
+
+return {
+  operation_id,
+  correlation_id,
+  inserted_count,
+  rejected_count,
+  duplicates_count,
+  errors: errors.map(e => ({
+    row_number: e.row_number,
+    field: e.field,
+    code: e.code,
+  })),
+}
+
     } catch (err: any) {
       const duration_ms = Date.now() - started
       await this.opsRepo.update(operation_id, {
