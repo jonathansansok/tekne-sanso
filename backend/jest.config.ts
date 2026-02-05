@@ -6,6 +6,19 @@ const config: Config = {
   testMatch: ["<rootDir>/tests/**/*.test.ts"],
   moduleFileExtensions: ["ts", "js"],
   clearMocks: true,
+
+  transform: {
+    "^.+\\.ts$": [
+      "ts-jest",
+      {
+        tsconfig: "<rootDir>/tsconfig.tests.json",
+        isolatedModules: true,
+        diagnostics: false,
+      },
+    ],
+  },
+
+  testPathIgnorePatterns: ["/dist/", "/node_modules/"],
 }
 
 export default config

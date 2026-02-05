@@ -21,7 +21,7 @@ export class OperationsRepository {
       error_summary?: string | null;
     },
   ) {
-    return prisma.operation.update({
+    return prisma.operation.updateMany({
       where: { id },
       data,
     });
