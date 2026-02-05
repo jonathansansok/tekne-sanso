@@ -63,7 +63,7 @@ TIP: Mostrar siempre los detalles
 
 
 ========================================
-README.md (secciones + bullets)
+CARACTERISTICAS:
 ========================================
 
 ## 1) Resumen
@@ -201,6 +201,21 @@ README.md (secciones + bullets)
 - `backend/tests/rules.test.ts` — **unit**: motor OOP de reglas de negocio (PolicyValidator + RuleEngine + BusinessRule).
 - `backend/tests/upload.int.test.ts` — **integration**: `POST /upload` (CSV multipart, validación, duplicados, conteos y payload).
 - `backend/tests/ai.int.test.ts` — **integration**: `POST /ai/insights` (insights + highlights + filtros aplicados).
+
+### Frontend (Vitest + React Testing Library)
+- Tests ubicados en `frontend/src/**/__tests__/*` o `frontend/src/**/*.test.tsx` (por feature).
+- Ejemplo real:
+- `frontend/src/features/policies/PoliciesPage.test.tsx` — renderiza la página de Policies y verifica que la tabla cargue datos (mock de `fetch` + RouterProvider).
+
+
+## 12) CI (GitHub Actions) 🤖
+- Archivo: .github/workflows/ci.yml
+- Jobs:
+- Backend: install → prisma generate → prisma migrate deploy → test → build
+- Frontend: install → test → build
+- Backend job usa Postgres (service) para correr integration tests (Supertest + Prisma).
+
+
 
 **Run**
 ```bash
