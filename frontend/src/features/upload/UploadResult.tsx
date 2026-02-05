@@ -34,12 +34,13 @@ export function UploadResult(p: {
     <span className="text-slate-500">rejected</span>{" "}
     <span className="font-semibold">{p.result.rejected_count}</span>
   </div>
-  {"duplicates_count" in p.result && (
-    <div>
-      <span className="text-slate-500">duplicates</span>{" "}
-      <span className="font-semibold">{p.result.duplicates_count ?? 0}</span>
-    </div>
-  )}
+  {typeof p.result.duplicates_count === "number" && (
+  <div>
+    <span className="text-slate-500">duplicates</span>{" "}
+    <span className="font-semibold">{p.result.duplicates_count}</span>
+  </div>
+)}
+
 </div>
 
 
