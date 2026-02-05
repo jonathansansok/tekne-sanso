@@ -41,7 +41,8 @@ export const UploadResponseSchema = z.object({
   correlation_id: z.string(),
   inserted_count: z.number(),
   rejected_count: z.number(),
-  duplicates_count: z.number().optional(),
+ duplicates_count: z.number().default(0),
+
   errors: z.array(UploadErrorSchema),
 })
 

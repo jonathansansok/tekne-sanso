@@ -1,4 +1,3 @@
-//backend\tests\upload.int.test.ts
 import request from "supertest"
 import { buildApp } from "../src/app"
 import { prisma } from "../src/db/prisma"
@@ -33,6 +32,7 @@ test("POST /upload inserts valid rows and rejects duplicates + invalid", async (
 
   expect(res.body.inserted_count).toBe(1)
   expect(res.body.rejected_count).toBe(2)
+  expect(res.body.duplicates_count).toBe(1)
 
   const codes = res.body.errors.map((e: any) => e.code)
   expect(codes).toContain("DUPLICATE_POLICY_NUMBER")

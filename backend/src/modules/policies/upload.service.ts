@@ -20,6 +20,7 @@ export class UploadService {
 
     const errors: Array<{ row_number: number; field: string; code: string }> = []
     let inserted_count = 0
+    let duplicates_count = 0
 
     let row_number = 0
 
@@ -43,7 +44,9 @@ export class UploadService {
 
         const v = this.validator.validate(input)
         if (v.errors.length > 0) {
-          for (const e of v.errors) errors.push({ row_number: e.row_number, field: e.field, code: e.code })
+          for (const e of v.errors) {
+            errors.push({ row_number: e.row_number, field: e.field, code: e.code })
+          }
           continue
         }
 
@@ -59,6 +62,7 @@ export class UploadService {
         })
 
         if (res === "duplicate") {
+          duplicates_count += 1
           errors.push({
             row_number: input.row_number,
             field: "policy_number",
@@ -86,6 +90,7 @@ export class UploadService {
         correlation_id,
         inserted_count,
         rejected_count,
+        duplicates_count,
         errors,
       }
     } catch (err: any) {

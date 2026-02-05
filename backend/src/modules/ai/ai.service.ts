@@ -1,16 +1,51 @@
 import type { Policy } from "@prisma/client"
 import { PoliciesRepository } from "../policies/policies.repository"
 
+function normalizePolicyType(x?: string) {
+  const v = (x ?? "").trim()
+  if (!v) return undefined
+  const low = v.toLowerCase()
+  if (low === "property") return "Property"
+  if (low === "auto") return "Auto"
+  return v
+}
+
+function normalizeStatus(x?: string) {
+  const v = (x ?? "").trim()
+  if (!v) return undefined
+  const low = v.toLowerCase()
+  if (low === "active") return "active"
+  if (low === "expired") return "expired"
+  if (low === "cancelled") return "cancelled"
+  return v
+}
+
+function quantile(sorted: number[], q: number) {
+  if (sorted.length === 0) return 0
+  const pos = (sorted.length - 1) * q
+  const base = Math.floor(pos)
+  const rest = pos - base
+  if (sorted[base + 1] === undefined) return sorted[base]
+  return sorted[base] + rest * (sorted[base + 1] - sorted[base])
+}
+
 export class AiService {
   private readonly repo = new PoliciesRepository()
 
   async insights(input: { filters?: { status?: string; policy_type?: string; q?: string } }) {
-    const f = input.filters ?? {}
+    const raw = input.filters ?? {}
+
+    const f = {
+      status: normalizeStatus(raw.status),
+      policy_type: normalizePolicyType(raw.policy_type),
+      q: raw.q,
+    }
+
     const listRes = await this.repo.list({ limit: 100, offset: 0, ...f })
     const summary = await this.repo.summary(f)
 
     const items = listRes.items as Policy[]
-    const filtered_total = summary.total_policies
+    const filtered_policies = summary.total_policies
 
     const insights: string[] = []
     let risk_flags = 0
@@ -26,7 +61,9 @@ export class AiService {
 
     if (nearMin.length > 0) {
       risk_flags += 1
-      insights.push(`Hay ${nearMin.length} policies con insured_value cerca del minimo (< 1.1x) dentro del filtro.`)
+      insights.push(
+        `Hay ${nearMin.length} policies con insured_value cerca del minimo (< 1.1x) dentro del filtro.`,
+      )
       insights.push(`Recomendacion: alertar cuando insured_value < 1.1x del minimo por tipo.`)
     }
 
@@ -44,15 +81,33 @@ export class AiService {
     const premiums = items
       .map((p) => Number(p.premium_usd))
       .filter((n) => Number.isFinite(n))
-      .sort((a, b) => b - a)
+      .sort((a, b) => a - b)
+
+    let outliers: number[] = []
+    if (premiums.length >= 8) {
+      const q1 = quantile(premiums, 0.25)
+      const q3 = quantile(premiums, 0.75)
+      const iqr = q3 - q1
+      const high = q3 + 1.5 * iqr
+      const low = q1 - 1.5 * iqr
+      outliers = premiums.filter((x) => x > high || x < low)
+    }
 
     if (premiums.length >= 3) {
+      const top3 = [...premiums].sort((a, b) => b - a).slice(0, 3)
       risk_flags += 1
-      insights.push(`Outliers de premium (top 3): ${premiums.slice(0, 3).map((x) => x.toFixed(2)).join(", ")} USD.`)
+      insights.push(`Outliers de premium (top 3): ${top3.map((x) => x.toFixed(2)).join(", ")} USD.`)
       insights.push(`Recomendacion: auditar esas policies por posible riesgo o carga incorrecta.`)
     }
 
-    if (filtered_total >= 100) {
+    if (outliers.length > 0) {
+      risk_flags += 1
+      const examples = [...outliers].sort((a, b) => b - a).slice(0, 3)
+      insights.push(`Deteccion IQR: ${outliers.length} premiums outlier. Ejemplos: ${examples.map((x) => x.toFixed(2)).join(", ")} USD.`)
+      insights.push(`Recomendacion: aplicar validacion adicional o revisiones manuales en outliers.`)
+    }
+
+    if (filtered_policies >= 100) {
       risk_flags += 1
       insights.push(`Volumen alto (>=100) en el conjunto filtrado. Recomendacion: monitorear outliers y near-min por tipo.`)
     }
@@ -61,12 +116,12 @@ export class AiService {
       insights: insights.slice(0, 10),
       highlights: {
         total_policies: summary.total_policies,
-        filtered_policies: filtered_total,
+        filtered_policies,
         risk_flags,
         filters_applied: {
           status: f.status ?? null,
           policy_type: f.policy_type ?? null,
-          q: f.q ?? null,
+          q: (f.q ?? null) as any,
         },
       },
     }

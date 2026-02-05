@@ -4,7 +4,8 @@ import { PoliciesService } from "./policies.service"
 
 const ListQuery = z.object({
   limit: z.coerce.number().default(25).refine(v => v <= 100, "limit max is 100"),
-  offset: z.coerce.number().default(0),
+offset: z.coerce.number().default(0).refine(v => v >= 0, "offset must be >= 0"),
+
   status: z.string().optional(),
   policy_type: z.string().optional(),
   q: z.string().optional(),
