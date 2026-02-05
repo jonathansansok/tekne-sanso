@@ -1,116 +1,109 @@
-🚀 PRIORITARIO (SETUP LOCAL RÁPIDO)
-========================================
+# TEKNE Challenge — Policy Ingestion + Traceability + AI Insights
 
-0) Prerrequisitos
-- Node.js 20+
-- Docker + Docker Compose
+Mini solución end‑to‑end para ingestión de pólizas desde CSV con validación (técnica + reglas de negocio), persistencia en PostgreSQL, trazabilidad por operación/correlation_id y endpoint de “AI insights” (heurístico).
 
-1) PostgreSQL (dockerizado) 🐘
-- En la raíz del repo:
-  docker compose up -d db
-- Verificar health:
-  docker compose ps
-  (db debe quedar "healthy")
+---
 
-2) Backend (API) ⚙️
-- Ir a backend:
-  cd backend
-- Instalar deps:
-  npm i
-- Crear/cargar env:
-  - Copiar .env.example -> .env (o crear backend/.env)
-  - DATABASE_URL local (con puerto 5433 del compose):
-    DATABASE_URL=postgresql://tekne:tekne@localhost:5433/tekne_db?schema=public
-- Levantar dev:
-  npm run dev
+## 🚀 Despliegue rápido (verlo corriendo YA)
+
+### Opción A — Todo junto con Docker Compose (recomendado)
+```bash
+docker compose up --build
+```
+Abrir:
+- Frontend: http://localhost:5173
+- Backend API: http://localhost:3001
+- Swagger: http://localhost:3001/docs
+
+### Opción B — DB en Docker + Apps en local (dev clásico)
+**1) DB**
+```bash
+docker compose up -d db
+docker compose ps
+```
+(El servicio `db` debe quedar **healthy**)
+
+**2) Backend**
+```bash
+cd backend
+npm i
+cp .env.example .env
+npx prisma generate
+npx prisma migrate dev
+npm run dev
+```
 - API: http://localhost:3001
 - Swagger: http://localhost:3001/docs
 
-3) Prisma / Migraciones (IMPORTANTE) 🧬
-- Si corres el backend con `npm run dev` (fuera de Docker):
-  - Prisma NO corre solo.
-  - Ejecutar UNA VEZ:
-    npx prisma generate
-    npx prisma migrate dev
-- Si corres todo con `docker compose up --build`:
-  - Prisma SÍ corre solo (por el `command:` del servicio api):
-    npx prisma generate && (npx prisma migrate deploy || npx prisma db push) && npm run start
-
-4) Frontend (Web) 🖥️
-- En otra terminal:
-  cd frontend
-- Instalar deps:
-  npm i
-- (Opcional) env:
-  VITE_API_URL=http://localhost:3001
-- Levantar dev:
-  npm run dev
+**3) Frontend**
+```bash
+cd frontend
+npm i
+cp .env.example .env
+npm run dev
+```
 - Web: http://localhost:5173
 
-5) Flujo de prueba rápido ✅
-- Abrir UI -> Upload
-- Subir CSV con headers:
-  policy_number,customer,policy_type,start_date,end_date,premium_usd,status,insured_value_usd
-- Ver resultados:
-  inserted/rejected/duplicates + operation_id + correlation_id + errors por fila
+---
 
-TIP: Mostrar siempre los detalles
-- Logs backend: correlation_id + endpoint + duration_ms
-- Respuesta /upload: operation_id + correlation_id + errors
+## 🔐 Variables de entorno (.env) — IMPORTANTE para quien clona el repo
 
+> Para ejecutar local, copiar los ejemplos y ajustar si cambiás puertos/hosts.
 
-========================================
-CARACTERISTICAS:
-========================================
+### Backend (`backend/.env`)
+Copiar:
+- `backend/.env.example` → `backend/.env`
 
-## 1) Resumen
-- Mini app end-to-end para ingestión de pólizas desde CSV, validación (técnica + reglas de negocio), persistencia en PostgreSQL y endpoints UI-friendly.
-- Incluye trazabilidad (operations + correlation_id) y un endpoint de IA (heurístico) basado en datos del sistema.
+Ejemplo (tal cual funciona con el compose de este repo):
+```env
+PORT=3001
+DATABASE_URL=postgresql://tekne:tekne@localhost:5433/tekne_db?schema=public
+LOG_LEVEL=info
+AI_PROVIDER=heuristic
+```
 
-## 2) Stack
-- Backend: Node.js + Express (TypeScript), Prisma, PostgreSQL, Multer (upload CSV), Zod (validación), Pino (logs), Swagger.
-- Frontend: React (Vite), TanStack Router, TanStack React Query, Zod schemas para contratos, Tailwind (UI mínima).
-- Infra local: Docker Compose (db + api + web).
+### Frontend (`frontend/.env`)
+Copiar:
+- `frontend/.env.example` → `frontend/.env`
 
-## 3) Modelo de datos
-- **Policy**
-  - policy_number (UNIQUE)
-  - customer
-  - policy_type
-  - start_date
-  - end_date
-  - premium_usd
-  - status
-  - insured_value_usd
-  - created_at
-- **Operation** (trazabilidad de `/upload`)
-  - id (operation_id), created_at, endpoint, status, correlation_id
-  - rows_inserted, rows_rejected, duration_ms, error_summary
+Ejemplo:
+```env
+VITE_API_URL=http://localhost:3001
+```
 
-## 4) Upload CSV (POST /upload) 📦
-- Input: `multipart/form-data`, campo: `file`
+---
+
+## 🧱 Stack
+- **Backend:** Node.js + Express (TypeScript), Prisma, PostgreSQL, Multer (CSV upload), Zod (validación), Pino (logging), Swagger.
+- **Frontend:** React (Vite), TanStack Router, TanStack React Query, Tailwind.
+- **Infra local:** Docker Compose (db + api + web).
+
+---
+
+## ✅ Funcionalidad
+
+### Upload CSV (POST `/upload`)
+- Input: `multipart/form-data`, field: `file`
 - Headers requeridos:
-  - policy_number,customer,policy_type,start_date,end_date,premium_usd,status,insured_value_usd
+  - `policy_number,customer,policy_type,start_date,end_date,premium_usd,status,insured_value_usd`
 
-### Validaciones técnicas mínimas
-- policy_number obligatorio
-- start_date < end_date
-- status ∈ {active, expired, cancelled}
-- policy_type ∈ {Property, Auto}
-- premium_usd e insured_value_usd deben ser números finitos (rechaza NaN/Infinity)
+Validaciones técnicas mínimas:
+- `policy_number` obligatorio
+- `start_date` < `end_date`
+- `status` ∈ `{active, expired, cancelled}`
+- `policy_type` ∈ `{Property, Auto}`
+- `premium_usd` y `insured_value_usd` numéricos finitos (rechaza NaN/Infinity)
 
-### Reglas de negocio (OOP engine)
-- Property ⇒ insured_value_usd >= 5000  (code: PROPERTY_VALUE_TOO_LOW)
-- Auto     ⇒ insured_value_usd >= 10000 (code: AUTO_VALUE_TOO_LOW)
+Reglas de negocio (OOP engine):
+- `Property` ⇒ `insured_value_usd >= 5000`  (code: `PROPERTY_VALUE_TOO_LOW`)
+- `Auto`     ⇒ `insured_value_usd >= 10000` (code: `AUTO_VALUE_TOO_LOW`)
 
-### Duplicados (strict) 🧷
-- policy_number es UNIQUE en DB
-- Si se intenta insertar un duplicado:
-  - se captura Prisma P2002
-  - se reporta error por fila: DUPLICATE_POLICY_NUMBER
-  - **duplicates_count**: cantidad de duplicados detectados en ese upload
+Duplicados (strict):
+- `policy_number` es **UNIQUE** en DB
+- Duplicados se capturan (Prisma `P2002`) y se reportan por fila: `DUPLICATE_POLICY_NUMBER`
 
-### Respuesta requerida (ejemplo)
+Respuesta (ejemplo):
+```json
 {
   "operation_id": "uuid",
   "correlation_id": "uuid",
@@ -121,57 +114,49 @@ CARACTERISTICAS:
     { "row_number": 3, "field": "insured_value_usd", "code": "PROPERTY_VALUE_TOO_LOW" }
   ]
 }
+```
 
-## 5) API de consulta (UI-friendly)
-### GET /policies
-- Paginado: limit (default 25, max 100), offset (default 0)
-- Filtros:
-  - status (opcional)
-  - policy_type (opcional)
-  - q (opcional: búsqueda por policy_number o customer)
-- Respuesta:
+### API UI‑friendly
+#### GET `/policies`
+- Paginado: `limit` (default 25, max 100), `offset` (default 0)
+- Filtros: `status?`, `policy_type?`, `q?` (busca por `policy_number` o `customer`)
+
+Respuesta:
+```json
 {
-  "items": [ ... ],
-  "pagination": { "limit": 25, "offset": 0, "total": 120 }
+  "items": [],
+  "pagination": { "limit": 25, "offset": 0, "total": 0 }
 }
+```
 
-### GET /policies/summary
-- Devuelve:
-  - total_policies
-  - total_premium_usd
-  - count_by_status
-  - premium_by_type
+#### GET `/policies/summary`
+Devuelve:
+- `total_policies`
+- `total_premium_usd`
+- `count_by_status`
+- `premium_by_type`
 
-## 6) OOP (motor de reglas) 🧠
-- **BusinessRule** (abstracta)
-- Reglas concretas:
-  - PropertyMinInsuredValueRule
-  - AutoMinInsuredValueRule
-- **RuleEngine** aplica reglas sin conocer detalles (polimorfismo).
-- **PolicyValidator**
-  - valida checks técnicos (enum/fechas/números)
-  - si pasa, ejecuta RuleEngine
+### Trazabilidad (Operations + Correlation ID)
+- Si viene header `x-correlation-id` → se reutiliza
+- Si no → se genera UUID
+- Se devuelve en header `x-correlation-id` y en body (cuando aplica)
+- `/upload` crea una operación en DB:
+  - `RECEIVED -> PROCESSING -> COMPLETED/FAILED`
+  - guarda `duration_ms`, `rows_inserted`, `rows_rejected`, `error_summary`
+- Endpoint: `GET /operations/:id`
 
-## 7) Trazabilidad (Operations + Correlation ID) 🧾
-- correlation_id:
-  - si viene `x-correlation-id` -> se usa
-  - si no -> se genera UUID
-  - se devuelve en header `x-correlation-id` y en body cuando aplica
-- `/upload` crea operación en DB:
-  - RECEIVED -> PROCESSING -> COMPLETED/FAILED
-  - guarda duration_ms, rows_inserted, rows_rejected, error_summary
-- Endpoint de consulta:
-  - GET /operations/:id
-
-## 8) Feature IA (POST /ai/insights) 🤖
+### Feature IA (POST `/ai/insights`)
 - Input:
-  - { "filters": { "status": "...", "policy_type": "...", "q": "..." } }
-- Backend:
-  - reusa lógica de list + summary internamente
-  - genera 5–10 líneas con anomalías + recomendaciones
-- Output:
+```json
+{ "filters": { "status": "...", "policy_type": "...", "q": "..." } }
+```
+- Reusa list + summary internamente
+- Genera 5–10 líneas con anomalías + recomendaciones (AI_PROVIDER=heuristic)
+
+Output:
+```json
 {
-  "insights": [ "..." ],
+  "insights": ["..."],
   "highlights": {
     "total_policies": 120,
     "filtered_policies": 120,
@@ -179,48 +164,63 @@ CARACTERISTICAS:
     "filters_applied": { "status": "...", "policy_type": "...", "q": "..." }
   }
 }
+```
 
-## 9) UI (React) ✅
-- Upload: CSV + Upload + muestra inserted/rejected/duplicates + operation_id + correlation_id + errores por fila
-- Policies: tabla + paginado Prev/Next + filtros + botón Generate Insights
-- Summary: cards + listas de agregación
+---
 
-## 10) Local Run (Docker Compose) 🐳
-- docker compose up --build
-- db: postgres:16 (host 5433 -> container 5432)
-- api: http://localhost:3001
-- web: http://localhost:5173
-- Swagger: http://localhost:3001/docs
+## 🖥️ UI (React)
+- **Upload:** sube CSV + muestra `inserted/rejected/duplicates`, `operation_id`, `correlation_id` y errores por fila.
+- **Policies:** tabla + paginado Prev/Next + filtros + botón “Generate Insights”.
+- **Summary:** cards + agregaciones (por status/tipo/premium).
 
-## 11) Tests 🧪
+---
+
+## 🧪 Tests
 
 ### Backend (Jest + Supertest)
-- `backend/tests/rules.test.ts` — **unit**: motor OOP de reglas de negocio (PolicyValidator + RuleEngine + BusinessRule).
-- `backend/tests/upload.int.test.ts` — **integration**: `POST /upload` (CSV multipart, validación, duplicados, conteos y payload).
-- `backend/tests/ai.int.test.ts` — **integration**: `POST /ai/insights` (insights + highlights + filtros aplicados).
+- `backend/tests/rules.test.ts` — **unit**: motor OOP de reglas (PolicyValidator + RuleEngine + BusinessRule).
+- `backend/tests/upload.int.test.ts` — **integration**: `POST /upload` (multipart CSV, validación, duplicados, conteos y payload).
+- `backend/tests/ai.int.test.ts` — **integration**: `POST /ai/insights` (insights + highlights + filtros).
 
-### Frontend (Vitest + React Testing Library)
-- Tests ubicados en `frontend/src/**/__tests__/*` o `frontend/src/**/*.test.tsx` (por feature).
-- Ejemplo real:
-- `frontend/src/features/policies/PoliciesPage.test.tsx` — renderiza la página de Policies y verifica que la tabla cargue datos (mock de `fetch` + RouterProvider).
-
-
-## 12) CI (GitHub Actions) 🤖
-- Archivo: .github/workflows/ci.yml
-- Jobs:
-- Backend: install → prisma generate → prisma migrate deploy → test → build
-- Frontend: install → test → build
-- Backend job usa Postgres (service) para correr integration tests (Supertest + Prisma).
-
-
-
-**Run**
+Run:
 ```bash
 cd backend
 npm run test
 ```
-## Docs
-- `DECISIONS.md` — decisiones de arquitectura y tradeoffs.
-- `DEPLOY.md` — estrategia de deploy (Azure high-level) + checklist.
 
-FIN ✅
+### Frontend (Vitest + React Testing Library)
+- Ubicación recomendada: tests por feature en `frontend/src/features/**/**/*.test.tsx`
+- Ejemplo real:
+  - `frontend/src/features/policies/PoliciesPage.test.tsx` — renderiza Policies y valida que la tabla cargue datos (mock de `fetch` + RouterProvider).
+
+Run:
+```bash
+cd frontend
+npm run test
+```
+
+---
+
+## 🤖 CI (GitHub Actions)
+- Workflow: `.github/workflows/ci.yml`
+- Jobs típicos:
+  - **Backend:** install → prisma generate → prisma migrate deploy → test → build
+  - **Frontend:** install → test → build
+- El job de backend levanta Postgres como `service` para correr integration tests (Supertest + Prisma).
+
+---
+
+## 📄 Docs
+- `DECISIONS.md` — decisiones de arquitectura y tradeoffs.
+- `DEPLOY.md` — estrategia de deploy (high‑level) + checklist.
+
+---
+
+## ✅ Quick demo (para probar en 30 segundos)
+1) Abrir UI → Upload
+2) Subir un CSV con headers:
+`policy_number,customer,policy_type,start_date,end_date,premium_usd,status,insured_value_usd`
+3) Ver:
+- inserted/rejected/duplicates
+- `operation_id` + `correlation_id`
+- errores por fila
