@@ -8,6 +8,11 @@ frontend/node_modules/
 .env.*
 !.env.example
 
+# builds
+**/dist
+**/dist-tests
+**/*.log
+
 # logs
 npm-debug.log*
 yarn-debug.log*
