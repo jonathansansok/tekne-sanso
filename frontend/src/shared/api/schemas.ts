@@ -49,7 +49,13 @@ export const InsightsResponseSchema = z.object({
   insights: z.array(z.string()),
   highlights: z.object({
     total_policies: z.number(),
+    filtered_policies: z.number(),
     risk_flags: z.number(),
+    filters_applied: z.object({
+      status: z.string().nullable(),
+      policy_type: z.string().nullable(),
+      q: z.string().nullable(),
+    }),
   }),
 })
 

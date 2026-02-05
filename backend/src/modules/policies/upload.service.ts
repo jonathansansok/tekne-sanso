@@ -1,4 +1,3 @@
-//backend\src\modules\policies\upload.service.ts
 import type { Readable } from "stream"
 import { csvParser } from "../../utils/csv"
 import { PolicyValidator } from "./domain/PolicyValidator"
@@ -10,10 +9,7 @@ export class UploadService {
   private readonly policiesRepo = new PoliciesRepository()
   private readonly opsRepo = new OperationsRepository()
 
-  async processCsv(params: {
-    fileStream: Readable
-    correlationId: string
-  }) {
+  async processCsv(params: { fileStream: Readable; correlationId: string }) {
     const endpoint = "POST /upload"
     const op = await this.opsRepo.create(endpoint, params.correlationId)
     const operation_id = op.id
@@ -22,17 +18,8 @@ export class UploadService {
     const started = Date.now()
     await this.opsRepo.update(operation_id, { status: "PROCESSING" })
 
-    const errors: Array<{ row_number: number; field: string; code: string; message?: string }> = []
-    const validRows: Array<{
-      policy_number: string
-      customer: string
-      policy_type: string
-      start_date: Date
-      end_date: Date
-      premium_usd: number
-      status: string
-      insured_value_usd: number
-    }> = []
+    const errors: Array<{ row_number: number; field: string; code: string }> = []
+    let inserted_count = 0
 
     let row_number = 0
 
@@ -56,18 +43,11 @@ export class UploadService {
 
         const v = this.validator.validate(input)
         if (v.errors.length > 0) {
-          for (const e of v.errors) {
-            errors.push({
-              row_number: e.row_number,
-              field: e.field,
-              code: e.code,
-              message: e.message,
-            })
-          }
+          for (const e of v.errors) errors.push({ row_number: e.row_number, field: e.field, code: e.code })
           continue
         }
 
-        validRows.push({
+        const res = await this.policiesRepo.createOneStrict({
           policy_number: input.policy_number,
           customer: input.customer,
           policy_type: input.policy_type,
@@ -77,16 +57,20 @@ export class UploadService {
           status: input.status,
           insured_value_usd: input.insured_value_usd,
         })
+
+        if (res === "duplicate") {
+          errors.push({
+            row_number: input.row_number,
+            field: "policy_number",
+            code: "DUPLICATE_POLICY_NUMBER",
+          })
+          continue
+        }
+
+        inserted_count += 1
       }
 
-      const inserted_count = validRows.length > 0
-        ? await this.policiesRepo.createManyStrictInsert(validRows)
-        : 0
-
-      const rejectedRows = new Set(errors.map(e => e.row_number))
-
-const rejected_count = rejectedRows.size
-
+      const rejected_count = new Set(errors.map((e) => e.row_number)).size
       const duration_ms = Date.now() - started
 
       await this.opsRepo.update(operation_id, {
@@ -94,24 +78,16 @@ const rejected_count = rejectedRows.size
         rows_inserted: inserted_count,
         rows_rejected: rejected_count,
         duration_ms,
-        error_summary: rejected_count ? `${rejected_count} validation/rule errors` : null,
+        error_summary: rejected_count ? `${rejected_count} rejected` : null,
       })
 
-      const duplicates_count = Math.max(0, validRows.length - inserted_count)
-
-return {
-  operation_id,
-  correlation_id,
-  inserted_count,
-  rejected_count,
-  duplicates_count,
-  errors: errors.map(e => ({
-    row_number: e.row_number,
-    field: e.field,
-    code: e.code,
-  })),
-}
-
+      return {
+        operation_id,
+        correlation_id,
+        inserted_count,
+        rejected_count,
+        errors,
+      }
     } catch (err: any) {
       const duration_ms = Date.now() - started
       await this.opsRepo.update(operation_id, {
