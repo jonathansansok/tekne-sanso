@@ -6,15 +6,35 @@ import { Button } from "../../shared/components/Button"
 import { useUploadCsv } from "./hooks"
 import { UploadResult } from "./UploadResult"
 
+type UploadApiError = {
+  status: number
+  code?: string
+  message?: string
+  correlation_id?: string
+}
+
+function isUploadApiError(x: unknown): x is UploadApiError {
+  if (!x || typeof x !== "object") return false
+  const o = x as Record<string, unknown>
+  return typeof o.status === "number"
+}
+
 export function UploadPage() {
   const [file, setFile] = useState<File | null>(null)
   const m = useUploadCsv()
 
+  const err = m.error
+  const showErr = err ? (isUploadApiError(err) ? err : null) : null
+
   return (
     <Page title="Upload CSV">
       <div className="flex gap-3 text-sm">
-        <Link to="/policies" className="underline text-slate-700">Policies</Link>
-        <Link to="/summary" className="underline text-slate-700">Summary</Link>
+        <Link to="/policies" className="underline text-slate-700">
+          Policies
+        </Link>
+        <Link to="/summary" className="underline text-slate-700">
+          Summary
+        </Link>
       </div>
 
       <Card>
@@ -34,9 +54,20 @@ export function UploadPage() {
               Upload
             </Button>
 
-            {m.error && (
+            {err && (
               <div className="text-sm text-red-600">
-                {(m.error as any)?.code ?? "ERROR"} {(m.error as any)?.message ?? ""}
+                {showErr ? (
+                  <>
+                    <div>
+                      {showErr.code ?? "ERROR"} {showErr.message ?? ""}
+                    </div>
+                    <div className="font-mono text-xs opacity-80">
+                      corr: {showErr.correlation_id ?? "n/a"}
+                    </div>
+                  </>
+                ) : (
+                  <div>Upload failed</div>
+                )}
               </div>
             )}
           </div>

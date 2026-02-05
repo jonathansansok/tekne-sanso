@@ -14,9 +14,10 @@ export async function uploadCsv(file: File) {
   const fd = new FormData()
   fd.append("file", file)
 
-  const res = await fetch(url, { method: "POST", body: fd })
-  const correlationId = res.headers.get("x-correlation-id") ?? undefined
+const res = await fetch(url, { method: "POST", body: fd })
 
+const correlationId = res.headers.get("x-correlation-id") ?? undefined
+console.log("[uploadCsv] status=", res.status, "x-correlation-id=", correlationId)
   if (!res.ok) {
     let body: unknown = null
 

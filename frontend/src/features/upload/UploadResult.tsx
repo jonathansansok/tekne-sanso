@@ -6,9 +6,11 @@ export function UploadResult(p: {
     correlation_id: string
     inserted_count: number
     rejected_count: number
+    duplicates_count?: number
     errors: Array<{ row_number: number; field: string; code: string }>
   }
 }) {
+
   return (
     <Card>
       <CardBody className="space-y-4">
@@ -23,10 +25,23 @@ export function UploadResult(p: {
           </div>
         </div>
 
-        <div className="flex gap-4 text-sm">
-          <div><span className="text-slate-500">inserted</span> <span className="font-semibold">{p.result.inserted_count}</span></div>
-          <div><span className="text-slate-500">rejected</span> <span className="font-semibold">{p.result.rejected_count}</span></div>
-        </div>
+       <div className="flex flex-wrap gap-4 text-sm">
+  <div>
+    <span className="text-slate-500">inserted</span>{" "}
+    <span className="font-semibold">{p.result.inserted_count}</span>
+  </div>
+  <div>
+    <span className="text-slate-500">rejected</span>{" "}
+    <span className="font-semibold">{p.result.rejected_count}</span>
+  </div>
+  {"duplicates_count" in p.result && (
+    <div>
+      <span className="text-slate-500">duplicates</span>{" "}
+      <span className="font-semibold">{p.result.duplicates_count ?? 0}</span>
+    </div>
+  )}
+</div>
+
 
         {p.result.errors.length > 0 && (
           <div className="space-y-2">
