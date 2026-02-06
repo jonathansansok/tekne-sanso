@@ -2,9 +2,9 @@
 
 ## 🚀 Despliegue rápido (ver challenge hecho YA)
 
-### 1 🔐 Variables de entorno (.env)
+### 1 🔐 Variables de entorno (.env.example)
 
-### 1.a Backend (`backend/.env`)
+### 1.a Backend (`backend/.env.example`)
 Crear:
 `backend/.env.example` 
 contenido:
@@ -15,7 +15,7 @@ LOG_LEVEL=info
 AI_PROVIDER=heuristic
 ```
 
-### 1.b Frontend (`frontend/.env`)
+### 1.b Frontend (`frontend/.env.example`)
 Crear:
 `frontend/.env.example` 
 contenido:
