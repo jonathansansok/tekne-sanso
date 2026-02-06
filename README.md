@@ -1,21 +1,40 @@
 # TEKNE Challenge — Policy Ingestion + Traceability + AI Insights
 
-Mini solución end‑to‑end para ingestión de pólizas desde CSV con validación (técnica + reglas de negocio), persistencia en PostgreSQL, trazabilidad por operación/correlation_id y endpoint de “AI insights” (heurístico).
-
----
-
 ## 🚀 Despliegue rápido (verlo corriendo YA)
 
-### Opción A — Todo junto con Docker Compose (recomendado)
+## 🔐 Variables de entorno (.env) — IMPORTANTE para quien clona el repo
+
+
+### 1- Backend (`backend/.env`)
+Crear:
+- `backend/.env.example` 
+
+Ejemplo (tal cual funciona con el compose de este repo):
+```env
+PORT=3001
+DATABASE_URL=postgresql://tekne:tekne@localhost:5433/tekne_db?schema=public
+LOG_LEVEL=info
+AI_PROVIDER=heuristic
+```
+
+### 2- Frontend (`frontend/.env`)
+Crear:
+- `frontend/.env.example` 
+Ejemplo:
+```env.example
+VITE_API_URL=http://localhost:3001
+```
+
+### 3- Desplegar todo junto con Docker Compose (recomendado)
 ```bash
 docker compose up --build
 ```
 Abrir:
 - Frontend: http://localhost:5173
-- Backend API: http://localhost:3001
 - Swagger: http://localhost:3001/docs
 
-### Opción B — DB en Docker + Apps en local (dev clásico)
+
+### 3- Opción B — DB en Docker + Apps en local (dev clásico)
 **1) DB**
 ```bash
 docker compose up -d db
@@ -46,30 +65,8 @@ npm run dev
 
 ---
 
-## 🔐 Variables de entorno (.env) — IMPORTANTE para quien clona el repo
+Solución end‑to‑end para ingestión de pólizas desde CSV con validación (técnica + reglas de negocio), persistencia en PostgreSQL, trazabilidad por operación/correlation_id y endpoint de “AI insights” (heurístico).
 
-> Para ejecutar local, copiar los ejemplos y ajustar si cambiás puertos/hosts.
-
-### Backend (`backend/.env`)
-Copiar:
-- `backend/.env.example` → `backend/.env`
-
-Ejemplo (tal cual funciona con el compose de este repo):
-```env
-PORT=3001
-DATABASE_URL=postgresql://tekne:tekne@localhost:5433/tekne_db?schema=public
-LOG_LEVEL=info
-AI_PROVIDER=heuristic
-```
-
-### Frontend (`frontend/.env`)
-Copiar:
-- `frontend/.env.example` → `frontend/.env`
-
-Ejemplo:
-```env
-VITE_API_URL=http://localhost:3001
-```
 
 ---
 

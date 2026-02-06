@@ -14,14 +14,15 @@ export function UploadResult(p: {
   return (
     <Card>
       <CardBody className="space-y-4">
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
           <div className="text-sm">
             <div className="text-slate-500">operation_id</div>
-            <div className="font-mono text-xs break-all">{p.result.operation_id}</div>
+            <div className="mt-1 font-mono text-xs break-all rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">{p.result.operation_id}</div>
           </div>
           <div className="text-sm">
             <div className="text-slate-500">correlation_id</div>
-            <div className="font-mono text-xs break-all">{p.result.correlation_id}</div>
+            <div className="mt-1 font-mono text-xs break-all rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">{p.result.correlation_id}</div>
           </div>
         </div>
 
@@ -47,7 +48,8 @@ export function UploadResult(p: {
         {p.result.errors.length > 0 && (
           <div className="space-y-2">
             <div className="text-sm font-semibold">Errors</div>
-            <div className="overflow-auto border border-slate-200 rounded-xl">
+           <div className="overflow-auto rounded-2xl border border-slate-200 bg-white shadow-sm">
+
               <table className="min-w-full text-sm">
                 <thead className="bg-slate-50">
                   <tr>
@@ -58,7 +60,8 @@ export function UploadResult(p: {
                 </thead>
                 <tbody>
                   {p.result.errors.map((e, i) => (
-                    <tr key={i} className="border-t border-slate-200">
+                    <tr key={i} className="border-t border-slate-200 hover:bg-slate-50/60">
+
                       <td className="px-3 py-2">{e.row_number}</td>
                       <td className="px-3 py-2">{e.field}</td>
                       <td className="px-3 py-2 font-mono text-xs">{e.code}</td>

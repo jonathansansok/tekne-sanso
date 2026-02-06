@@ -53,3 +53,7 @@ tools/
 /tools/
 /tools/bundle.ps1
 /tools/bundle_head15.ps1
+# env
+.env
+backend/.env
+frontend/.env

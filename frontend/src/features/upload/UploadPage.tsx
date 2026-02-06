@@ -39,11 +39,17 @@ export function UploadPage() {
 
       <Card>
         <CardBody className="space-y-4">
-          <input
-            type="file"
-            accept=".csv,text/csv"
-            onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-          />
+          <label className="block">
+  <div className="text-xs text-slate-500 mb-2">CSV file</div>
+  <div className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-3 h-10 shadow-sm">
+    <input
+      className="block w-full text-sm text-slate-700 file:mr-3 file:rounded-lg file:border-0 file:bg-slate-100 file:px-3 file:py-2 file:text-sm file:font-medium file:text-slate-700 hover:file:bg-slate-200"
+      type="file"
+      accept=".csv,text/csv"
+      onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+    />
+  </div>
+</label>
 
           <div className="flex items-center gap-3">
             <Button
