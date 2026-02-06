@@ -1,4 +1,3 @@
-//frontend\src\features\policies\PoliciesPage.tsx
 import { useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { Page } from "../../shared/components/Page";
@@ -8,6 +7,11 @@ import { usePolicies, useInsights } from "./hooks";
 
 const STATUS = ["", "active", "expired", "cancelled"] as const;
 const TYPES = ["", "Property", "Auto"] as const;
+
+function humanizeStatus(s: string) {
+  if (!s) return s;
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
 
 export function PoliciesPage() {
   const [status, setStatus] = useState<string>("");
@@ -36,7 +40,7 @@ export function PoliciesPage() {
 
   return (
     <Page title="Policies">
-      <div className="flex gap-3 text-sm">
+      <div className="flex flex-wrap gap-3 text-sm">
         <Link to="/" className="underline text-slate-700">
           Upload
         </Link>
@@ -48,7 +52,7 @@ export function PoliciesPage() {
       <Card>
         <CardBody className="grid grid-cols-1 md:grid-cols-4 gap-3">
           <div className="space-y-1">
-            <div className="text-xs text-slate-500">status</div>
+            <div className="text-xs text-slate-500">Status</div>
             <select
               className="w-full h-10 rounded-xl border border-slate-200 px-3 bg-white shadow-sm outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
               value={status}
@@ -59,14 +63,14 @@ export function PoliciesPage() {
             >
               {STATUS.map((s) => (
                 <option key={s} value={s}>
-                  {s || "all"}
+                  {s ? humanizeStatus(s) : "All"}
                 </option>
               ))}
             </select>
           </div>
 
           <div className="space-y-1">
-            <div className="text-xs text-slate-500">policy_type</div>
+            <div className="text-xs text-slate-500">Policy type</div>
             <select
               className="w-full h-10 rounded-xl border border-slate-200 px-3 bg-white shadow-sm outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
               value={policyType}
@@ -77,7 +81,7 @@ export function PoliciesPage() {
             >
               {TYPES.map((s) => (
                 <option key={s} value={s}>
-                  {s || "all"}
+                  {s || "All"}
                 </option>
               ))}
             </select>
@@ -85,7 +89,7 @@ export function PoliciesPage() {
 
           <div className="space-y-1 md:col-span-2">
             <div className="text-xs text-slate-500">
-              search (policy_number or customer)
+              Search (policy number or customer)
             </div>
             <input
               className="w-full h-10 rounded-xl border border-slate-200 px-3 bg-white shadow-sm outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
@@ -98,19 +102,19 @@ export function PoliciesPage() {
             />
           </div>
 
-          <div className="md:col-span-4 flex gap-3 items-center">
+          <div className="md:col-span-4 flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
             <Button
               variant="primary"
               onClick={() => insights.mutate({ filters: params })}
               loading={insights.isPending}
               disabled={query.isLoading}
             >
-              Generate Insights
+              Generate insights
             </Button>
 
             {insights.data && (
               <div className="text-sm text-slate-600">
-                risk_flags:{" "}
+                Risk flags:{" "}
                 <span className="font-semibold">
                   {insights.data.highlights.risk_flags}
                 </span>
@@ -119,7 +123,7 @@ export function PoliciesPage() {
           </div>
 
           {insights.data && (
-            <div className="md:col-span-4 rounded-2xl border border-indigo-200 bg-gradient-to-r from-indigo-50 to-purple-50 p-5 space-y-2 shadow-sm">
+            <div className="md:col-span-4 rounded-2xl border border-indigo-200 bg-gradient-to-r from-indigo-50 to-purple-50 p-4 md:p-5 space-y-2 shadow-sm">
               <div className="text-sm font-semibold text-slate-900 flex items-center gap-2">
                 <span className="inline-block h-2 w-2 rounded-full bg-gradient-to-r from-indigo-600 to-purple-500" />
                 Insights
@@ -146,16 +150,28 @@ export function PoliciesPage() {
 
           {query.data && (
             <>
-              <div className="overflow-auto rounded-2xl border border-slate-200 bg-white shadow-sm">
-                <table className="min-w-full text-sm">
+              <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm touch-pan-x overscroll-x-contain [scrollbar-gutter:stable] [-webkit-overflow-scrolling:touch]">
+                <table className="min-w-[920px] md:min-w-full text-sm">
                   <thead className="bg-slate-50/80 backdrop-blur supports-[backdrop-filter]:bg-slate-50/60">
                     <tr>
-                      <th className="text-left px-3 py-2">policy_number</th>
-                      <th className="text-left px-3 py-2">customer</th>
-                      <th className="text-left px-3 py-2">policy_type</th>
-                      <th className="text-left px-3 py-2">premium_usd</th>
-                      <th className="text-left px-3 py-2">insured_value_usd</th>
-                      <th className="text-left px-3 py-2">status</th>
+                      <th className="text-left px-3 py-2 whitespace-nowrap">
+                        Policy number
+                      </th>
+                      <th className="text-left px-3 py-2 whitespace-nowrap">
+                        Customer
+                      </th>
+                      <th className="text-left px-3 py-2 whitespace-nowrap">
+                        Type
+                      </th>
+                      <th className="text-left px-3 py-2 whitespace-nowrap">
+                        Premium (USD)
+                      </th>
+                      <th className="text-left px-3 py-2 whitespace-nowrap">
+                        Insured value (USD)
+                      </th>
+                      <th className="text-left px-3 py-2 whitespace-nowrap">
+                        Status
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
@@ -164,19 +180,26 @@ export function PoliciesPage() {
                         key={p.id}
                         className="border-t border-slate-200 hover:bg-slate-50/60 transition-colors"
                       >
-                        <td className="px-3 py-2 font-mono text-xs">
+                        <td className="px-3 py-2 font-mono text-xs whitespace-nowrap">
                           {p.policy_number}
                         </td>
-                        <td className="px-3 py-2">{p.customer}</td>
-                        <td className="px-3 py-2">{p.policy_type}</td>
-                        <td className="px-3 py-2">{String(p.premium_usd)}</td>
-                        <td className="px-3 py-2">
+                        <td className="px-3 py-2 whitespace-nowrap">
+                          {p.customer}
+                        </td>
+                        <td className="px-3 py-2 whitespace-nowrap">
+                          {p.policy_type}
+                        </td>
+                        <td className="px-3 py-2 whitespace-nowrap">
+                          {String(p.premium_usd)}
+                        </td>
+                        <td className="px-3 py-2 whitespace-nowrap">
                           {String(p.insured_value_usd)}
                         </td>
-                        <td className="px-3 py-2">
+                        <td className="px-3 py-2 whitespace-nowrap">
                           <span
                             className={[
-                              "inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium border",
+                              "inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium border whitespace-nowrap",
+
                               p.status === "active"
                                 ? "bg-emerald-50 text-emerald-700 border-emerald-200"
                                 : p.status === "expired"
@@ -184,7 +207,7 @@ export function PoliciesPage() {
                                   : "bg-rose-50 text-rose-700 border-rose-200",
                             ].join(" ")}
                           >
-                            {p.status}
+                            {humanizeStatus(p.status)}
                           </span>
                         </td>
                       </tr>
@@ -193,7 +216,7 @@ export function PoliciesPage() {
                 </table>
               </div>
 
-              <div className="flex items-center justify-between text-sm">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-sm">
                 <div className="text-slate-600">
                   {offset + 1}-{Math.min(offset + limit, total)} / {total}
                 </div>
