@@ -2,9 +2,9 @@
 
 ## 🚀 Despliegue rápido (ver challenge hecho YA)
 
-### 0. 🔐 Variables de entorno (.env)
+### 1 🔐 Variables de entorno (.env)
 
-### 1. Backend (`backend/.env`)
+### 1.a Backend (`backend/.env`)
 Crear:
 `backend/.env.example` 
 contenido:
@@ -15,7 +15,7 @@ LOG_LEVEL=info
 AI_PROVIDER=heuristic
 ```
 
-### 2. Frontend (`frontend/.env`)
+### 1.b Frontend (`frontend/.env`)
 Crear:
 `frontend/.env.example` 
 contenido:
@@ -23,7 +23,7 @@ contenido:
 VITE_API_URL=http://localhost:3001
 ```
 
-### 3. Desplegar todo junto con Docker Compose (recomendado)
+### 2. Desplegar todo junto con Docker Compose (recomendado)
 ```bash
 docker compose up --build
 ```
@@ -31,12 +31,12 @@ Abrir:
 - Frontend: http://localhost:5173
 - Swagger: http://localhost:3001/docs
 
-### 4. En el front: Examinar los CSV de la carpeta del repo:
+### 3. En el front: Examinar los CSV de la carpeta del repo:
 
 sample-data\tekne_policies_bulk_120_valid_plus_6_invalid-nice.csv
 sample-data\sample_policies.csv
 
-### 4.b Ver los resultados en front e Insights
+### 3.b Ver los resultados en front e Insights
 
 
 ## 🚀 Despliegue modo dev  
