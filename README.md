@@ -1,15 +1,13 @@
 # TEKNE Challenge — Policy Ingestion + Traceability + AI Insights
 
-## 🚀 Despliegue rápido (verlo corriendo YA)
+## 🚀 Despliegue rápido (ver challenge hecho YA)
 
-## 🔐 Variables de entorno (.env) — IMPORTANTE para quien clona el repo
+### 0. 🔐 Variables de entorno (.env)
 
-
-### 1- Backend (`backend/.env`)
+### 1. Backend (`backend/.env`)
 Crear:
-- `backend/.env.example` 
-
-Ejemplo (tal cual funciona con el compose de este repo):
+`backend/.env.example` 
+contenido:
 ```env
 PORT=3001
 DATABASE_URL=postgresql://tekne:tekne@localhost:5433/tekne_db?schema=public
@@ -17,15 +15,15 @@ LOG_LEVEL=info
 AI_PROVIDER=heuristic
 ```
 
-### 2- Frontend (`frontend/.env`)
+### 2. Frontend (`frontend/.env`)
 Crear:
-- `frontend/.env.example` 
-Ejemplo:
+`frontend/.env.example` 
+contenido:
 ```env.example
 VITE_API_URL=http://localhost:3001
 ```
 
-### 3- Desplegar todo junto con Docker Compose (recomendado)
+### 3. Desplegar todo junto con Docker Compose (recomendado)
 ```bash
 docker compose up --build
 ```
@@ -33,8 +31,17 @@ Abrir:
 - Frontend: http://localhost:5173
 - Swagger: http://localhost:3001/docs
 
+### 4. En el front: Examinar los CSV de la carpeta del repo:
 
-### 3- Opción B — DB en Docker + Apps en local (dev clásico)
+sample-data\tekne_policies_bulk_120_valid_plus_6_invalid-nice.csv
+sample-data\sample_policies.csv
+
+### 4.b Ver los resultados en front e Insights
+
+
+## 🚀 Despliegue modo dev  
+
+###  DB en Docker + Apps en local (dev clásico)
 **1) DB**
 ```bash
 docker compose up -d db

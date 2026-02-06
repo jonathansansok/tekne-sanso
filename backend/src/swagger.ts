@@ -1,5 +1,4 @@
-//backend\src\swagger.ts
-import swaggerJSDoc from "swagger-jsdoc";
+import swaggerJSDoc from "swagger-jsdoc"
 
 export const swaggerSpec = swaggerJSDoc({
   definition: {
@@ -9,5 +8,9 @@ export const swaggerSpec = swaggerJSDoc({
       version: "1.0.0",
     },
   },
-  apis: ["src/**/*.ts"],
-});
+  apis: [
+    "src/app.ts",
+    "src/modules/**/*.routes.ts",
+    "src/modules/**/*.controller.ts",
+  ],
+})

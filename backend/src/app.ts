@@ -13,6 +13,15 @@ import { operationsRoutes } from "./modules/operations/operations.routes"
 export function buildApp() {
   const app = express()
 
+  /**
+   * @openapi
+   * /health:
+   *   get:
+   *     summary: Health check
+   *     responses:
+   *       200:
+   *         description: OK
+   */
   app.get("/health", (_req, res) => {
     return res.status(200).json({ ok: true })
   })
